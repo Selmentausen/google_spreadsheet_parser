@@ -10,8 +10,6 @@ import os
 # noinspection PyPackageRequirements
 from google.oauth2 import service_account
 
-print('Script started!')
-
 
 def update_currency_exchange():
     global USD_TO_RUB_EXCHANGE_RATE
@@ -59,7 +57,6 @@ def convert_usd_to_rub(usd):
 
 
 def update_db():
-    print('database update started!')
     conn = psycopg2.connect(database=os.environ['DB_NAME'], user=os.environ['DB_USER'],
                             password=os.environ['DB_PASSWORD'], host=os.environ['DB_HOST'],
                             port=os.environ['DB_PORT'])
@@ -89,7 +86,6 @@ TO_DATE('{values['delivery_date']}', 'DD.MM.YYYY'))""")
         print(f'deleted next orders {", ".join(map(lambda v: str(v["order_id"]), db_data.values()))}')
     conn.commit()
     conn.close()
-    print('database update finished!')
 
 
 if __name__ == '__main__':
