@@ -19,3 +19,4 @@ RUN chmod +x /usr/src/app/entrypoint.sh
 COPY . .
 
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
