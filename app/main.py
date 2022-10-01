@@ -4,9 +4,13 @@ import xml.etree.ElementTree as ET
 import requests
 import schedule
 import time
+import datetime
+import os
 
 # noinspection PyPackageRequirements
 from google.oauth2 import service_account
+
+print('Script started!')
 
 
 def update_currency_exchange():
@@ -26,9 +30,21 @@ def get_usd_to_rub_exchange():
     return float(item.text.replace(',', '.'))
 
 
-def get_data_from_google_sheets(sheet):
-    return {int(item_id): {'order_id': int(order_id), 'usd_cost': int(usd_cost), 'delivery_date': delivery_date}
-            for item_id, order_id, usd_cost, delivery_date in sheet.get("A2:D")}
+def get_data_from_google_sheets():
+    sheet = client.open(GOOGLE_SPREADSHEET_NAME).sheet1
+    data = {}
+    for items in sheet.get("A2:D"):
+        try:
+            item_id, order_id, usd_cost, delivery_date = items
+            int(item_id)
+            float(usd_cost)
+            datetime.date(*reversed(list(map(int, delivery_date.split('.')))))
+        except ValueError:
+            continue
+        except TypeError:
+            continue
+        data[int(item_id)] = {'order_id': order_id, 'usd_cost': int(usd_cost), 'delivery_date': delivery_date}
+    return data
 
 
 def get_data_from_db(cursor):
@@ -43,18 +59,19 @@ def convert_usd_to_rub(usd):
 
 
 def update_db():
-    conn = psycopg2.connect(database='test_case_db', user='postgres', password='admin123', host='127.0.0.1',
-                            port='5432')
+    print('database update started!')
+    conn = psycopg2.connect(database=os.environ['DB_NAME'], user=os.environ['DB_USER'],
+                            password=os.environ['DB_PASSWORD'], host=os.environ['DB_HOST'],
+                            port=os.environ['DB_PORT'])
     cursor = conn.cursor()
-    sheet = client.open('test_data').sheet1
-    google_sheets_data = get_data_from_google_sheets(sheet)
+    google_sheets_data = get_data_from_google_sheets()
     db_data = get_data_from_db(cursor)
     for item_id, values in google_sheets_data.items():
         if item_id in db_data:
-            # google data is not subset of db data, then update data
+            # if google item values is not subset of db item values, then update data on db
             if not set(google_sheets_data[item_id].values()) <= set(db_data[item_id].values()):
                 cursor.execute(f"""UPDATE orders 
-SET order_id={values['order_id']},
+SET order_id='{values['order_id']}',
 usd_cost={values['usd_cost']},
 rub_cost={convert_usd_to_rub(values['usd_cost'])}, 
 delivery_date=TO_DATE('{values['delivery_date']}', 'DD.MM.YYYY')
@@ -64,7 +81,7 @@ WHERE id={item_id}""")
         else:
             cursor.execute(
                 f"""INSERT INTO orders
-VALUES ({item_id}, {values['order_id']}, {values['usd_cost']}, {convert_usd_to_rub(values['usd_cost'])},
+VALUES ({item_id}, '{values['order_id']}', {values['usd_cost']}, {convert_usd_to_rub(values['usd_cost'])},
 TO_DATE('{values['delivery_date']}', 'DD.MM.YYYY'))""")
             print(f'added order {values["order_id"]}')
     if db_data:
@@ -79,12 +96,14 @@ if __name__ == '__main__':
     SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file",
               "https://www.googleapis.com/auth/spreadsheets"]
     CURRENCY_EXCHANGE_FILE_PATH = 'currency_exchange.xml'
-    USD_TO_RUB_EXCHANGE_RATE = get_usd_to_rub_exchange()
+    USD_TO_RUB_EXCHANGE_RATE = 1
+    GOOGLE_SPREADSHEET_NAME = 'test_data'
+    update_currency_exchange()
     credentials = service_account.Credentials.from_service_account_file('service_client_secret.json', scopes=SCOPES)
     client = gspread.authorize(credentials)
 
     schedule.every().day.at('00:00').do(update_currency_exchange)
-    schedule.every(5).minutes.do(update_db)
+    schedule.every(10).seconds.do(update_db)
 
     running = True
     while running:
