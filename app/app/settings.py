@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'orders_api',
     'orders',
+    'telegram_bot',
 ]
 
 MIDDLEWARE = [

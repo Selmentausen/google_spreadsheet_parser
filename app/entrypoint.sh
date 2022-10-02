@@ -1,14 +1,5 @@
 #!/bin/sh
 
-if [ "$1" = cron ]; then
-  ./manage.py crontab add
-else
-  python manage.py flush --no-input
-  python manage.py migrate
-  python manage.py crontab add
-  python manage.py crontab show
-fi
-
 if [ "$DATABASE" = "postgres" ]; then
     echo "Waiting for postgres..."
 
@@ -18,5 +9,18 @@ if [ "$DATABASE" = "postgres" ]; then
 
     echo "PostgreSQL started"
 fi
+
+
+if [ "$1" = cron ]; then
+  ./manage.py crontab add
+else
+  python manage.py flush --no-input
+  python manage.py migrate
+  python manage.py crontab add
+  python manage.py crontab show
+  python manage.py updatedb
+fi
+
+
 
 exec "$@"

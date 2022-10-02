@@ -30,5 +30,12 @@ services:
       - POSTGRES_USER=docker
       - POSTGRES_PASSWORD=docker
       - POSTGRES_DB=spreadsheet_db
+  telegram_bot:
+    build: ./telegram_bot
+    env_file:
+      - ./.env.dev
+    links:
+      - db
+    restart: unless-stopped
 volumes:
   pgdata:
