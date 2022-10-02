@@ -4,19 +4,20 @@ import datetime
 # noinspection PyPackageRequirements
 from google.oauth2 import service_account
 from pathlib import Path
+from django.conf import settings
 
 
-def get_spreadsheet_data():
-    scopes = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file",
-              "https://www.googleapis.com/auth/spreadsheets"]
+def get_sheet_data():
+    """Собираем данные с Google Sheets, проверяем и возвращаем в виде словаря"""
+    # Подключаемся к Google Service Client
     secrets_path = os.path.join(Path(__file__).resolve().parent, 'service_client_secret.json')
-    credentials = service_account.Credentials.from_service_account_file(secrets_path, scopes=scopes)
+    credentials = service_account.Credentials.from_service_account_file(secrets_path, scopes=settings.SCOPES)
     client = gspread.authorize(credentials)
-    sheet = client.open(os.environ.get('SPREADSHEET_NAME', 'test_data')).sheet1
 
+    sheet = client.open(settings.SPREADSHEET_NAME).sheet1
     data = {}
     for items in sheet.get("A2:D"):
-        try:  # if fail to gather and convert data from a line then skip the line
+        try:  # Если не хватает данных или не получилось конвертировать в нужный формат, то пропускаем
             item_id, order_id, usd_cost, delivery_date = items
             item_id = int(item_id)
             usd_cost = float(usd_cost)

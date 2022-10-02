@@ -1,24 +1,11 @@
-from django.http import JsonResponse
-from rest_framework import viewsets
-
-from .serializers import OrderSerializer
-from .models import Orders
-from .api_calls.google_spreadsheet import get_spreadsheet_data
-from .api_calls.usd_to_rub_exchange_rate import get_usd_to_rub_exchange_rate
+from django.shortcuts import render
+from django.http import HttpResponse
+from orders_api.models import Order
+from django.core.management import call_command
 
 
 # Create your views here.
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Orders.objects.all()
-    serializer_class = OrderSerializer
-
-
-def update_data(request):
-    spreadsheet_data = get_spreadsheet_data()
-    exchange_rate = get_usd_to_rub_exchange_rate()
-    for item_id, values in spreadsheet_data.items():
-        order, _ = Orders.objects.update_or_create(id=item_id,
-                                                   defaults={**values, 'rub_cost': values['usd_cost'] * exchange_rate})
-        order.save()
-    Orders.objects.exclude(id__in=spreadsheet_data.keys()).delete()
-    return JsonResponse({'success': 'OK'})
+def index(request):
+    call_command('updatedb')
+    orders = Order.objects.all()
+    return render(request, "index.html", context={'orders': orders})

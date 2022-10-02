@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Testing</title>
+</head>
+<body>
+<div>
+    <table align="center">
+        <tr>
+            <th>Id</th>
+            <th>Order Id</th>
+            <th>Usd cost</th>
+            <th>Rub cost</th>
+            <th>Delivery Date</th>
+        </tr>
+        {% for item in orders %}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.order_id }}</td>
+            <td>{{ item.usd_cost|floatformat:"0" }}</td>
+            <td>{{ item.rub_cost|floatformat:"2" }}</td>
+            <td>{{ item.delivery_date }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+</body>
+</html>
