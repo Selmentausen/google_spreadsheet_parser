@@ -10,7 +10,7 @@ from django.conf import settings
 def get_sheet_data():
     """Собираем данные с Google Sheets, проверяем и возвращаем в виде словаря"""
     # Подключаемся к Google Service Client
-    secrets_path = os.path.join(Path(__file__).resolve().parent, 'service_client_secret.json')
+    secrets_path = os.path.join(Path(__file__).resolve().parent, 'some_random_file.json')
     credentials = service_account.Credentials.from_service_account_file(secrets_path, scopes=settings.SCOPES)
     client = gspread.authorize(credentials)
 
