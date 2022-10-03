@@ -7,6 +7,7 @@
 
 После успешного запуска приложения на данные можно посмотреть по ссылке "https://127.0.0.1:8000"
 <br>Так же реализован REST API для запроса данных "https://127.0.0.1:8000/api"
+<br>Ссылка на google sheets "https://docs.google.com/spreadsheets/d/1fBXX0RDofNV1EHf51TYg9A91BRJ5x8bPt0lbqId54eA/edit#gid=0"
 
 <h3>Телеграм бот</h3>
 <p>Имя телеграм бота: my_test_delivery_checker
